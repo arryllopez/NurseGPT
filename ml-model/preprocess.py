@@ -37,17 +37,17 @@ print(dataset.head())
 print(dataset.describe())
 
 #checking the dataset for null values
-null_checker = dataset.apply(lambda x: sum(x.isnull())).to_frame(name='count')
-print(null_checker)
+#null_checker = dataset.apply(lambda x: sum(x.isnull())).to_frame(name='count')
+#print(null_checker)
 
-plt.figure(figsize=(10,5))
-plt.plot(null_checker.index, null_checker['count']) 
-plt.xticks(null_checker.index, null_checker.index, rotation=45,
-           horizontalalignment='right')
-plt.title("Before removing Null values") 
-plt.xlabel("Column names") 
-plt.margins(0.1) 
-plt.show()  
+# #plt.figure(figsize=(10,5))
+# plt.plot(null_checker.index, null_checker['count']) 
+# plt.xticks(null_checker.index, null_checker.index, rotation=45,
+#            horizontalalignment='right')
+# plt.title("Before removing Null values") 
+# plt.xlabel("Column names") 
+# plt.margins(0.1) 
+# plt.show()  
 
 #severityDataset = pd.read_csv("ml-model/datasets/raw/severity.csv") 
 
@@ -55,4 +55,8 @@ plt.show()
 
 #cleaning and preprocessing the dataset for the huggingface trainer 
 
+#identifying all symptom columns
+symptom_columns = [col for col in dataset.columns if "Symptom" in col]
 
+#function to clean text, converting to lower case and removing extra spaces
+def clean_text(text): 
