@@ -98,6 +98,6 @@ for disease, label in list(label_mapping.items())[:5]:
     print(f" | {disease} | {label} |")
 
 # ---------------- SAVE CLEANED DATASET ----------------
-dataset[['text', 'label']].to_csv("ml-model/datasets/processed/dataset.csv", index=False)
-print("\n✅ Preprocessed dataset saved to ml-model/datasets/processed/dataset.csv")
+dataset[['text', 'label']].to_csv("ml-model/datasets/processed/processed_dataset.csv", index=False)
+print("\n✅ Preprocessed dataset saved to ml-model/datasets/processed/processed_dataset.csv")
 print("✅ Label mapping saved to ml-model/datasets/processed/label_mapping.json")
