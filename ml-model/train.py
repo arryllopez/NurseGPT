@@ -5,6 +5,7 @@ from  sklearn.model_selection import train_test_split
 from torch import tensor
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
 from datasets import Dataset 
+import evaluate, numpy as np
 
 
 
@@ -99,3 +100,49 @@ test_dataset.set_format('torch', columns=['input_ids', 'attention_mask', 'labels
   #'attention_mask': tensor([1, 1, 1, 1, ...]),
   #'labels': tensor(1)
 #}
+
+#defining training arguments
+training_args = TrainingArguments(
+   output_dir = "ml-model/models-progress/clinicalBERTResults", #where checkpoints of the model goes 
+   eval_strategy = "epoch", #evaluating the model at each end of epoch
+   save_strategy = "epoch", #saving the model at the end of each epoch 
+   learning_rate = 2e-5, #learning rate for the model
+   per_device_eval_batch_size=16,
+   per_device_train_batch_size=16, #batch size for training
+    num_train_epochs= 3, #number of epochs to train the model
+    weight_decay=0.01, #weight decay to prevent overfitting
+    logging_dir="ml-model/models-progress/clinicalBERTResults/logs", #directory for storing logs
+    logging_steps=50, #log every 50 steps
+    load_best_model_at_end=True, #load the best model at the end of training
+    fp16=True, #use mixed precision training (if supported by hardware - nvidia gpu is present) 
+) 
+
+#defining the metric for evaluation
+accuracy_metric = evaluate.load("accuracy")
+f1_metric = evaluate.load("f1")
+
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1) #get the index of the highest logit value for each prediction
+    return {
+        'accuracy': accuracy_metric.compute(predictions=predictions, references=labels),
+        'f1': f1_metric.compute(predictions=predictions, references=labels, average='weighted')
+    }
+
+trainer = Trainer( 
+    model=model,
+    args=training_args,
+    train_dataset=train_dataset,
+    eval_dataset=test_dataset,
+    tokenizer=tokenizer,
+    compute_metrics=compute_metrics
+)
+
+#running the training loop
+trainer.train()
+
+results=trainer.evaluate()
+print("Final Evaluation:" , results)
+
+trainer.save_model("ml-model/fine_tuned_clinicalbert")
+tokenizer.save_pretrained("ml-model/fine_tuned_clinicalbert")
